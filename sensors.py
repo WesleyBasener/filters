@@ -9,6 +9,7 @@ from utils import rbe_to_cart, cart_to_rbe
 class Measurement:
     
     measurements:np.array
+    measurements_gt:np.array
     R:np.array
     H:np.array
     measurement_method:Callable
@@ -37,13 +38,16 @@ class XYZSensor(Sensor):
 
     def measure_ground_truths(self, gt):
         measurements = []
+        measurements_gt = []
 
         for x in gt.ground_truth:
             noise = np.random.multivariate_normal(np.zeros(self.measure_dim), self.R)
-            y = self.measure(x) + noise
-            measurements.append(y)
+            y = self.measure(x)
+            measurements_gt.append(y)
+            measurements.append(y + noise)
 
-        return Measurement(measurements=measurements,
+        return Measurement(measurements_gt=measurements_gt,
+                           measurements=measurements,
                            R=self.R,
                            H=self.H,
                            measurement_method=self.measure,
@@ -60,13 +64,16 @@ class RBESensor(Sensor):
 
     def measure_ground_truths(self, gt):
         measurements = []
-
+        measurements_gt = []
+        
         for x in gt.ground_truth:
             noise = np.random.multivariate_normal(np.zeros(3), self.R)
-            y = self.measure(x) + noise
-            measurements.append(y)
+            y = self.measure(x)
+            measurements_gt.append(y)
+            measurements.append(y + noise)
 
-        return Measurement(measurements=measurements,
+        return Measurement(measurements_gt=measurements_gt,
+                           measurements=measurements,
                            R=self.R,
                            H=None,
                            measurement_method=self.measure,
