@@ -28,7 +28,7 @@ class XYZSensor(Sensor):
     def __init__(self, dim=3, num_dirs_gt=1, num_dirs_mes=0, cov=None):
         
         if cov == None:
-            cov = np.ones(num_dirs_mes+1)
+            cov = 10*np.ones(num_dirs_mes + 1)
 
         self.R = np.kron(np.identity(dim*(1+num_dirs_mes)), np.diag(cov))
 
@@ -65,7 +65,7 @@ class RBESensor(Sensor):
     def measure_ground_truths(self, gt):
         measurements = []
         measurements_gt = []
-        
+
         for x in gt.ground_truth:
             noise = np.random.multivariate_normal(np.zeros(3), self.R)
             y = self.measure(x)

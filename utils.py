@@ -14,3 +14,5 @@ def rbe_to_cart(rbe:np.array):
     x = rbe[0]*sin(rbe[2])*cos(rbe[1])
     y = rbe[0]*sin(rbe[2])*cos(rbe[1])
     z = rbe[0]*sin(rbe[2])
+
+    return np.array([x,y,z])
