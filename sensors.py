@@ -58,7 +58,7 @@ class XYZSensor(Sensor):
         return self.H @ x 
     
 class RBESensor(Sensor):
-    def __init__(self, dim=3, num_dirs=1, cov=[10, 0.2, 0.2]):
+    def __init__(self, dim=3, num_dirs=1, cov=[5, 0.02, 0.02]):
 
         self.R = np.diag(cov)
 

@@ -6,7 +6,7 @@ from grapher import plot_3d_lines
 from utils import cart_to_rbe, rbe_to_cart
 
 def main():
-    gt = GroundTruthFactory("CNWP", 100, init=np.array([100, 0, 100, 0, 50, 0]))
+    gt = GroundTruthFactory("CNWP", 1000, init=np.array([100, 0, 100, 0, 50, 0]))
     rbe_sensor = RBESensor()
     xyz_sensor = XYZSensor()
 
@@ -18,8 +18,6 @@ def main():
 
     kf_preds = []
     ukf_preds = []
-
-    
 
     for z in mes_xyz.measurements[1:]:
         kf.predict_and_update(z)

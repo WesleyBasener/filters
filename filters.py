@@ -63,6 +63,7 @@ class ExtendedKalmanFilter(Filter):
         pass
     
 class UnscentedKalmanFilter(Filter):
+
     def __init__(self, gt, mes, alpha:float, beta:float, k:float=None, init_x:np.array=None, init_P:np.array=None):
         self.F = gt.F
         self.Q = gt.Q
@@ -81,15 +82,16 @@ class UnscentedKalmanFilter(Filter):
 
         self.n = len(self.x)
         if k is None:
-            self.k = self.n - 3
+            self.k = 3 - self.n
         else:
             self.k = k
         self.alpha = alpha
         self.beta = beta
-        self.lam = self.alpha**2*(self.n + self.k) - self.n
+        self.lam = (self.alpha**2)*(self.n + self.k) - self.n
 
         W_c = [self.lam/(self.n + self.lam) + 1 - self.alpha**2 + self.beta]
         W_m = [self.lam/(self.n + self.lam)]
+
         for _ in range(2*self.n):
             W_c.append(1/(2*(self.n + self.lam)))
             W_m.append(1/(2*(self.n + self.lam)))
@@ -105,30 +107,27 @@ class UnscentedKalmanFilter(Filter):
         X = self.get_sigmas()
         self.Y = X @ self.F.T
 
-        self.x_pred = self.W_m @ self.Y
-        self.P_pred = self.unscented_transform(self.x_pred, self.Y, self.W_c, self.Q)
+        self.x_pred, self.P_pred = self.unscented_transform(self.Y, self.Q)
 
     def update(self, z):
         Z = self.measure(self.Y)
 
-        mean_z = self.W_m @ Z
+        mean_z, P_z = self.unscented_transform(Z, self.R)
 
         y = z - mean_z
 
-        P_z = self.unscented_transform(mean_z, Z, self.W_c, self.R)
-
         K = np.zeros((len(self.x_pred), len(mean_z)))
-        for i in range(1+2*self.n):
-            y_sub = self.Y[i] - self.x_pred
-            z_sub = Z[i] - mean_z
-            K += self.W_c[i] * np.outer(y_sub, z_sub)
+        for i in range(len(self.W_c)):
+            y_std = self.Y[i] - self.x_pred
+            z_std = Z[i] - mean_z
+            K += self.W_c[i] * np.outer(y_std, z_std)
         K = K @ np.linalg.inv(P_z)
 
         self.x = self.x_pred + K @ y
         self.P = self.P_pred - K @ P_z @ K.T
 
     def get_sigmas(self):
-        S = np.linalg.cholesky((self.lam+self.n)*self.P)
+        S = np.linalg.cholesky((self.lam+self.n)*self.P, upper=True)
         X = np.zeros((1+2*self.n, self.n))
         
         X[0] = self.x
@@ -144,18 +143,17 @@ class UnscentedKalmanFilter(Filter):
             Z[i] = self.measurement_method(X[i])
         return Z
 
-    def weighted_mean(self, w, X):
-        return w @ X
-
-    def unscented_transform(self, x_mean, X, w, S):
-        covariance = np.zeros((len(x_mean), len(x_mean)))
+    def unscented_transform(self, X, S):
         
-        for i in range(len(w)):
+        x_mean = self.W_m @ X
+
+        covariance = np.zeros((len(x_mean), len(x_mean)))
+        for i in range(len(self.W_c)):
             y = X[i] - x_mean 
-            covariance += w[i]*np.outer(y, y)
+            covariance += self.W_c[i]*np.outer(y, y)
         covariance += S
 
-        return covariance
+        return x_mean, covariance
 
 class ParticleFilter(Filter):
     def __init__(self, gt, mes):
