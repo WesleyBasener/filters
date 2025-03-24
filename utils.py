@@ -1,5 +1,5 @@
-import numpy as np
-from numpy import cos, sin, atan2, asin
+import jax.numpy as np
+from jax.numpy import cos, sin, atan2, asin
 
 def cart_to_rbe(cart:np.array, covar=None):
     
@@ -9,7 +9,6 @@ def cart_to_rbe(cart:np.array, covar=None):
 
     return np.array([r,b,e])
     
-
 
 def rbe_to_cart(rbe:np.array, covar=None):
 

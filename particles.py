@@ -5,6 +5,8 @@ from dataclasses import dataclass
 class GroundTruth:
     
     ground_truth:np.array
+    dim:int
+    num_dirs:int
     Q:np.array
     F:np.array
     motion_method:str
@@ -36,7 +38,7 @@ def CNWP(n:int, dim:int=3, init:np.array=None, cov:np.array=None, dt=1):
         next = F @ gt[i] + noise
         gt.append(next)
 
-    return GroundTruth(ground_truth=gt, Q=Q, F=F, motion_method="CNWP")
+    return GroundTruth(ground_truth=gt, dim=dim, num_dirs=1, Q=Q, F=F, motion_method="CNWP")
 
 def GroundTruthFactory(model:str, n:int, dim:int=3, init:np.array=None, cov:np.array=None, dt=1):
 
