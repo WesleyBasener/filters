@@ -1,7 +1,7 @@
 import jax.numpy as np
 from jax.numpy import cos, sin, atan2, asin
 
-def cart_to_rbe(cart:np.array, covar=None):
+def cart_to_rbe(cart:np.array)->np.array:
     
     r = np.linalg.norm(cart)
     b = atan2(cart[1], cart[0])
@@ -10,7 +10,7 @@ def cart_to_rbe(cart:np.array, covar=None):
     return np.array([r,b,e])
     
 
-def rbe_to_cart(rbe:np.array, covar=None):
+def rbe_to_cart(rbe:np.array):
 
     x = rbe[0]*cos(rbe[2])*cos(rbe[1])
     y = rbe[0]*cos(rbe[2])*sin(rbe[1])

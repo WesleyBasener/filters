@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-def plot_3d_lines(array1, array2, array3):
+def plot_3d_lines(array1, array2, array3, title):
     """
     Plots two nX3 arrays as 3D lines.
     
@@ -24,5 +24,12 @@ def plot_3d_lines(array1, array2, array3):
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
     ax.legend()
+
+    print(f"Sensor ARE: {np.mean(np.abs((array3 - array1)/array1))}")
+    print(f"{title} ARE: {np.mean(np.abs((array2 - array1[1:])/array1[1:]))}")
+
+    plt.tight_layout()
+
+    plt.title(title)
     
-    plt.show()
+    return plt

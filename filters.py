@@ -45,7 +45,7 @@ class KalmanFilter(Filter):
         self.P_pred = self.F @ self.P @ self.F.T + self.Q
 
     def update(self, z):
-        y = z - self.H @ self.x
+        y = z - self.H @ self.x_pred
 
         S = self.H @ self.P_pred @ self.H.T + self.R
         K = self.P_pred @ self.H.T @ np.linalg.inv(S)
@@ -60,6 +60,7 @@ class ExtendedKalmanFilter(Filter):
         self.R = mes.R
         self.measurement_method = mes.measurement_method
         self.H = jacfwd(mes.measurement_method)
+        self.F_jac = jacfwd(lambda x : x @ self.F )
 
         if init_x is None:
             self.x = gt.ground_truth[0]
@@ -71,11 +72,16 @@ class ExtendedKalmanFilter(Filter):
         else:
             self.P = init_P
 
+        # self.count = 0
+        # self.Q_scale = 10
+        # self.e_thresh = 100
+
     def predict_and_update(self, z, dt = 1):
         self.predict()
         self.update(z)
 
     def predict(self):
+        F_jac = self.F_jac(self.x.astype(float))
         self.x_pred = self.F @ self.x
         self.P_pred = self.F @ self.P @ self.F.T + self.Q
 
@@ -89,8 +95,15 @@ class ExtendedKalmanFilter(Filter):
 
         self.x = self.x_pred + K @ y
         self.P = (np.identity(self.P.shape[0]) - K @ H) @ self.P_pred
+   
+        # e = y.T @ np.linalg.inv(S) @ y
+        # if e > self.e_thresh:
+        #     self.count += 1
+        #     self.Q *= self.Q_scale
+        # elif self.count > 0:
+        #     self.count -= 1
+        #     self.Q /= self.Q_scale
 
-    
 class UnscentedKalmanFilter(Filter):
 
     def __init__(self, gt, mes, alpha:float, beta:float, k:float=None, init_x:np.array=None, init_P:np.array=None):
@@ -185,7 +198,7 @@ class UnscentedKalmanFilter(Filter):
         return x_mean, covariance
 
 class ParticleFilter(Filter):
-    def __init__(self, gt, mes, num_part:int=100, nef_thresh:float=0.9, init_x:np.array=None, init_P:np.array=None):
+    def __init__(self, gt, mes, num_part:int=1000, nef_thresh:float=0.9, init_x:np.array=None, init_P:np.array=None):
         self.F = gt.F
         self.Q = gt.Q
         self.R = mes.R

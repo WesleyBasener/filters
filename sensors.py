@@ -28,7 +28,7 @@ class XYZSensor(Sensor):
     def __init__(self, dim=3, num_dirs_gt=1, num_dirs_mes=0, cov=None):
         
         if cov == None:
-            cov = 10*np.ones(num_dirs_mes + 1)
+            cov = 1000000*np.ones(num_dirs_mes + 1)
 
         self.R = np.kron(np.identity(dim*(1+num_dirs_mes)), np.diag(cov))
 
